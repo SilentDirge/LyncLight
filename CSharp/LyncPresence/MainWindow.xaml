@@ -13,10 +13,10 @@ IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A
 PARTICULAR PURPOSE.
 =====================================================================*/-->
     
-<Window x:Class="PresencePublication.MainWindow"
+<Window x:Class="LyncPresence.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    Title="Contact Information Sample" ResizeMode="CanMinimize"
+    Title="Lync Presence" ResizeMode="CanMinimize"
     Height="205" Width="330"
     Loaded="Window_Loaded" Closing="Window_Closing">
     

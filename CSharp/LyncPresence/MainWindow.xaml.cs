@@ -25,7 +25,7 @@ using Microsoft.Lync.Model;
 using System.IO.Ports;
 using System.Windows.Forms;
 
-namespace PresencePublication
+namespace LyncPresence
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
@@ -43,6 +43,45 @@ namespace PresencePublication
 
         bool isLightshowModeActive = false;
         #endregion
+
+        public MainWindow()
+        {
+            InitializeComponent();
+
+            Title = "Initializing...";
+
+            //Save the current dispatcher to use it for changes in the user interface.
+            dispatcher = Dispatcher.CurrentDispatcher;
+
+            // Get a list of serial port names. 
+            string[] ports = SerialPort.GetPortNames();
+
+            Console.WriteLine("The following serial ports were found:");
+
+            // Display each port name to the console. 
+            foreach (string port in ports)
+            {
+                Console.WriteLine(port);
+            }
+
+            try
+            {
+                serialPort = new SerialPort("COM8", 9600, Parity.None, 8, StopBits.One);
+                serialPort.Open();
+                Console.WriteLine("SerialPort Opened Successfully");
+
+                ApplyColor(MyColor.Magenta);
+                SetupSleepTimer(GetNextTime(false));
+
+                Title = "Lync Presence: Connected";
+            }
+            catch (SystemException systemException)
+            {
+                serialPort = null;
+                Console.WriteLine("SerialPort Error: " + systemException);
+                Title = "Lync Presence: *Disconnected*";
+            }
+        }
 
         public void SetupSleepTimer(DateTime futureTime)
         {
@@ -71,6 +110,15 @@ namespace PresencePublication
 
             sleepTimer.Interval = (int)timeDif.TotalMilliseconds;
             sleepTimer.Start();
+
+            if (isLightshowModeActive)
+            {
+                Console.WriteLine("Time until light show begins: " + timeDif.ToString());
+            }
+            else
+            {
+                Console.WriteLine("Time until light show ends: " + timeDif.ToString());
+            }
         }
 
         private DateTime GetNextTime(bool lightshowActive)
@@ -92,43 +140,6 @@ namespace PresencePublication
                 // TESTING:
                 //return DateTime.Now + new TimeSpan(0, 0, 1, 0, 0);
             }
-        }
-
-        public MainWindow()
-        {
-            InitializeComponent();
-
-            //Save the current dispatcher to use it for changes in the user interface.
-            dispatcher = Dispatcher.CurrentDispatcher;
-
-            // Get a list of serial port names. 
-            string[] ports = SerialPort.GetPortNames();
-
-            Console.WriteLine("The following serial ports were found:");
-
-            // Display each port name to the console. 
-            foreach (string port in ports)
-            {
-                Console.WriteLine(port);
-            }
-
-            try
-            {
-                serialPort = new SerialPort("COM8", 9600, Parity.None, 8, StopBits.One);
-                serialPort.Open();
-                Console.WriteLine("SerialPort Opened Successfully");
-
-                ApplyColor(MyColor.Magenta);
-                SetupSleepTimer(GetNextTime(false));
-            }
-            catch (SystemException systemException)
-            {
-                Console.WriteLine("SerialPort Error: " + systemException);
-            }
-        }
-
-        ~MainWindow()
-        {
         }
 
         #region Handlers for user interface controls events
@@ -209,7 +220,7 @@ namespace PresencePublication
             //Publish the new availability value
             try
             {
-                lyncClient.Self.BeginPublishContactInformation(newInformation,PublishContactInformationCallback, null);
+                lyncClient.Self.BeginPublishContactInformation(newInformation, PublishContactInformationCallback, null);
             }
             catch (LyncClientException lyncClientException)
             {
@@ -244,7 +255,7 @@ namespace PresencePublication
             //Publish the new personal note value
             try
             {
-                lyncClient.Self.BeginPublishContactInformation(newInformation,PublishContactInformationCallback, null);
+                lyncClient.Self.BeginPublishContactInformation(newInformation, PublishContactInformationCallback, null);
             }
             catch (LyncClientException lyncClientException)
             {
@@ -566,56 +577,63 @@ namespace PresencePublication
                 return;
             }
 
-            switch (color)
+            try
             {
-                case MyColor.Magenta:
-                    {
-                        byte[] dat = System.Text.Encoding.ASCII.GetBytes("m");
-                        serialPort.Write(dat, 0, 1);
-                    }
-                    break;
+                switch (color)
+                {
+                    case MyColor.Magenta:
+                        {
+                            byte[] dat = System.Text.Encoding.ASCII.GetBytes("m");
+                            serialPort.Write(dat, 0, 1);
+                        }
+                        break;
 
-                case MyColor.Yellow:
-                    {
-                        byte[] dat = System.Text.Encoding.ASCII.GetBytes("y");
-                        serialPort.Write(dat, 0, 1);
-                    }
-                    break;
+                    case MyColor.Yellow:
+                        {
+                            byte[] dat = System.Text.Encoding.ASCII.GetBytes("y");
+                            serialPort.Write(dat, 0, 1);
+                        }
+                        break;
 
-                case MyColor.Red:
-                    {
-                        byte[] dat = System.Text.Encoding.ASCII.GetBytes("r");
-                        serialPort.Write(dat, 0, 1);
-                    }
-                    break;
+                    case MyColor.Red:
+                        {
+                            byte[] dat = System.Text.Encoding.ASCII.GetBytes("r");
+                            serialPort.Write(dat, 0, 1);
+                        }
+                        break;
 
-                case MyColor.DarkRed:
-                    {
-                        byte[] dat = System.Text.Encoding.ASCII.GetBytes("r");
-                        serialPort.Write(dat, 0, 1);
-                    }
-                    break;
+                    case MyColor.DarkRed:
+                        {
+                            byte[] dat = System.Text.Encoding.ASCII.GetBytes("r");
+                            serialPort.Write(dat, 0, 1);
+                        }
+                        break;
 
-                case MyColor.LimeGreen:
-                    {
-                        byte[] dat = System.Text.Encoding.ASCII.GetBytes("g");
-                        serialPort.Write(dat, 0, 1);
-                    }
-                    break;
+                    case MyColor.LimeGreen:
+                        {
+                            byte[] dat = System.Text.Encoding.ASCII.GetBytes("g");
+                            serialPort.Write(dat, 0, 1);
+                        }
+                        break;
 
-                case MyColor.LightSlateGray:
-                    {
-                        byte[] dat = System.Text.Encoding.ASCII.GetBytes("p");
-                        serialPort.Write(dat, 0, 1);
-                    }
-                    break;
+                    case MyColor.LightSlateGray:
+                        {
+                            byte[] dat = System.Text.Encoding.ASCII.GetBytes("p");
+                            serialPort.Write(dat, 0, 1);
+                        }
+                        break;
 
-                default:
-                    {
-                        byte[] dat = System.Text.Encoding.ASCII.GetBytes("f");
-                        serialPort.Write(dat, 0, 1);
-                    }
-                    break;
+                    default:
+                        {
+                            byte[] dat = System.Text.Encoding.ASCII.GetBytes("f");
+                            serialPort.Write(dat, 0, 1);
+                        }
+                        break;
+                }
+            }
+            catch (IOException e)
+            {
+                Console.WriteLine(e);
             }
         }
 

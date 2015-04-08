@@ -14,7 +14,7 @@ PARTICULAR PURPOSE.
 =====================================================================*/
 using System.Windows;
 
-namespace ContactInformation
+namespace LyncPresence
 {
     /// <summary>
     /// Interaction logic for App.xaml
