@@ -70,8 +70,36 @@ namespace LyncPresence
                 serialPort.Open();
                 Console.WriteLine("SerialPort Opened Successfully");
 
-                ApplyColor(MyColor.Magenta);
-                SetupSleepTimer(GetNextTime(false));
+                ApplyColor(MyColor.Blue);
+
+                DateTime timeNow = DateTime.Now;
+                // started within light show period?
+                if (timeNow.Hour >= 19 || timeNow.Hour < 8)
+                {
+                    // go straight into the light show
+                    isLightshowModeActive = true;
+                    ApplyColor(MyColor.LightshowMode);
+
+                    DateTime nextTime;
+
+                    if (timeNow.Hour >= 19)
+                    {
+                        DateTime tomorrow = DateTime.Now + new TimeSpan(1, 0, 0, 0);
+                        nextTime = new DateTime(tomorrow.Year, tomorrow.Month, tomorrow.Day, 8, 0, 0);
+                    }
+                    else
+                    {
+                        DateTime now = DateTime.Now;
+                        nextTime = new DateTime(now.Year, now.Month, now.Day, 8, 0, 0);
+                    }
+
+                    SetupSleepTimer(nextTime);
+                }
+                else
+                {
+                    isLightshowModeActive = false;
+                    SetupSleepTimer(GetNextTime(isLightshowModeActive));
+                }
 
                 Title = "Lync Presence: Connected";
             }
@@ -113,11 +141,11 @@ namespace LyncPresence
 
             if (isLightshowModeActive)
             {
-                Console.WriteLine("Time until light show begins: " + timeDif.ToString());
+                Console.WriteLine("Time until light show ends: " + timeDif.ToString());
             }
             else
             {
-                Console.WriteLine("Time until light show ends: " + timeDif.ToString());
+                Console.WriteLine("Time until light show begins: " + timeDif.ToString());
             }
         }
 
@@ -202,6 +230,7 @@ namespace LyncPresence
         {
             if (serialPort != null)
             {
+                isLightshowModeActive = false;
                 ApplyColor(MyColor.Magenta);
                 serialPort.Close();
             }
@@ -212,6 +241,7 @@ namespace LyncPresence
         /// </summary>
         private void AvailabilityComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            /*
             //Add the availability to the contact information items to be published
             Dictionary<PublishableContactInformationType, object> newInformation =
                 new Dictionary<PublishableContactInformationType, object>();
@@ -239,6 +269,7 @@ namespace LyncPresence
                     throw;
                 }
             }
+             */
 
         }
 
@@ -457,7 +488,7 @@ namespace LyncPresence
 
                 //Enable elements in the user interface
                 personalNoteTextBox.IsEnabled = true;
-                availabilityComboBox.IsEnabled = true;
+                availabilityComboBox.IsEnabled = /*true;*/ false; // leave the availability box disabled since it doesn't do anything right now
                 setNoteButton.IsEnabled = true;
             }
             else
@@ -483,6 +514,7 @@ namespace LyncPresence
             LimeGreen,
             LightSlateGray,
             Magenta,
+            Blue,
             LightshowMode
         }
 
@@ -572,7 +604,7 @@ namespace LyncPresence
 
         private void ApplyColor(MyColor color)
         {
-            if (serialPort == null)
+            if (serialPort == null || (isLightshowModeActive && color != MyColor.LightshowMode))
             {
                 return;
             }
@@ -584,6 +616,13 @@ namespace LyncPresence
                     case MyColor.Magenta:
                         {
                             byte[] dat = System.Text.Encoding.ASCII.GetBytes("m");
+                            serialPort.Write(dat, 0, 1);
+                        }
+                        break;
+
+                    case MyColor.Blue:
+                        {
+                            byte[] dat = System.Text.Encoding.ASCII.GetBytes("b");
                             serialPort.Write(dat, 0, 1);
                         }
                         break;

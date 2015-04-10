@@ -34,7 +34,7 @@ void applyColor(Color col) {
   analogWrite(bluePin, scalar - col.b * scalar);
 }
 
-float transitionRate = 0.003f;
+float transitionRate = 0.001f;
 bool lightShowSpeedFast = false;
 
 void updateColorTransitions() {
@@ -101,9 +101,9 @@ void applyLightShowColor() {
 }
 
 bool lightShowChangeColor() {
- return fabs(currentColor.r - nextColor.r) < 0.1 &&
-        fabs(currentColor.g - nextColor.g) < 0.1 &&
-        fabs(currentColor.b - nextColor.b) < 0.1;
+ return fabs(currentColor.r - nextColor.r) < 0.01 &&
+        fabs(currentColor.g - nextColor.g) < 0.01 &&
+        fabs(currentColor.b - nextColor.b) < 0.01;
 }
 
 void loop() {
@@ -152,6 +152,8 @@ void serialEvent() {
       transitionTo(magenta);
     } else if (inChar == 'p') {
       transitionTo(purple);
+    } else if (inChar == 'w') {
+      transitionTo(white);      
     } else if (inChar == 'x') {
       lowBrite = !lowBrite;
     } else if (inChar == 'z') {
