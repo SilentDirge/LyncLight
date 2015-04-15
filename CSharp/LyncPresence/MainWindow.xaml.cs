@@ -74,7 +74,7 @@ namespace LyncPresence
 
                 DateTime timeNow = DateTime.Now;
                 // started within light show period?
-                if (timeNow.Hour >= 19 || timeNow.Hour < 8)
+                if (timeNow.Hour >= 19 || timeNow.Hour < 8 || timeNow.DayOfWeek == DayOfWeek.Saturday || timeNow.DayOfWeek == DayOfWeek.Sunday)
                 {
                     // go straight into the light show
                     isLightshowModeActive = true;
@@ -82,7 +82,17 @@ namespace LyncPresence
 
                     DateTime nextTime;
 
-                    if (timeNow.Hour >= 19)
+                    if (timeNow.DayOfWeek == DayOfWeek.Saturday)
+                    {
+                        DateTime monday = DateTime.Now + new TimeSpan(2, 0, 0, 0);
+                        nextTime = new DateTime(monday.Year, monday.Month, monday.Day, 8, 0, 0);
+                    }
+                    else if (timeNow.DayOfWeek == DayOfWeek.Sunday)
+                    {
+                        DateTime monday = DateTime.Now + new TimeSpan(1, 0, 0, 0);
+                        nextTime = new DateTime(monday.Year, monday.Month, monday.Day, 8, 0, 0);
+                    }
+                    else if (timeNow.Hour >= 19)
                     {
                         DateTime tomorrow = DateTime.Now + new TimeSpan(1, 0, 0, 0);
                         nextTime = new DateTime(tomorrow.Year, tomorrow.Month, tomorrow.Day, 8, 0, 0);
@@ -151,6 +161,19 @@ namespace LyncPresence
 
         private DateTime GetNextTime(bool lightshowActive)
         {
+            DateTime timeNow = DateTime.Now;
+
+            if (timeNow.DayOfWeek == DayOfWeek.Saturday)
+            {
+                DateTime monday = DateTime.Now + new TimeSpan(2, 0, 0, 0);
+                return new DateTime(monday.Year, monday.Month, monday.Day, 8, 0, 0);
+            }
+            else if (timeNow.DayOfWeek == DayOfWeek.Sunday)
+            {
+                DateTime monday = DateTime.Now + new TimeSpan(1, 0, 0, 0);
+                return new DateTime(monday.Year, monday.Month, monday.Day, 8, 0, 0);
+            }
+
             // if in lightshow, check again (and stop) after x hours from now
             if (lightshowActive)
             {
@@ -163,7 +186,6 @@ namespace LyncPresence
             else
             {
                 // start at 7pm
-                DateTime timeNow = DateTime.Now;
                 return new DateTime(timeNow.Year, timeNow.Month, timeNow.Day, 19, 0, 0);
                 // TESTING:
                 //return DateTime.Now + new TimeSpan(0, 0, 1, 0, 0);
